@@ -21,6 +21,32 @@ The current version of DosePal focuses primarily on the **software platform**, w
 
 ---
 
+### 1. Smart Pill Dispenser (Hardware)
+
+A physical pill dispenser prototype was built to remind patients when it is time to take their medication.
+
+Features include:
+
+- **LED indicator** that lights up when it is time for medication
+- **Buzzer alert** to notify the patient
+- Simple and intuitive interaction designed for elderly users
+
+When the patient takes the medication, the action can be simulated or recorded and reflected in the monitoring system.
+
+---
+
+# Target Users
+
+DosePal is designed for:
+
+- **Elderly patients with dementia**
+- **Patients with short-term memory impairment**
+- **Caregivers managing medication schedules for elderly family members**
+
+The system aims to reduce missed medications and provide caregivers with reassurance that medications are being taken as scheduled.
+
+---
+
 # Application Preview
 
 ## Dashboard
