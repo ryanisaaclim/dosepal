@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block title %}DosePal{% endblock %}
+
+{% block body %}
+<div class="hero">
+    <h2>Welcome back.</h2>
+    <div class="subtitle">Here’s your medication schedule for today.</div>
+</div>
+
+<div class="stats section">
+    <div class="stat-box">
+        <div class="stat-label">Taken</div>
+        <div class="stat-value">{{ taken_count }}/{{ total }}</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-label">Adherence</div>
+        <div class="stat-value">{{ percent }}%</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-label">Current Time</div>
+        <div class="stat-value time-value">{{ now }}</div>
+    </div>
+</div>
+
+<div class="card section">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+        <div style="font-weight:700; font-size:1.1rem;">Daily Progress</div>
+        <div class="muted">{{ taken_count }} of {{ total }} completed</div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ percent }}%;"></div>
+    </div>
+</div>
+
+{% if next_med %}
+<div class="card section">
+    <div style="font-size:0.95rem; color: var(--blue); font-weight:700; margin-bottom:8px;">NEXT DOSE</div>
+    <div style="font-size:1.5rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:6px;">{{ next_med["name"] }}</div>
+    <div class="muted">Scheduled for {{ next_med["time"] }}</div>
+</div>
+{% else %}
+<div class="card section">
+    <div style="font-size:1.1rem; font-weight:700; color: var(--green); margin-bottom:6px;">All caught up</div>
+    <div class="muted">All medications for today have been completed.</div>
+</div>
+{% endif %}
+
+<div class="row section">
+    <a class="btn {% if selected_filter == 'all' %}primary{% else %}subtle{% endif %}" href="/?filter=all">All</a>
+    <a class="btn {% if selected_filter == 'upcoming' %}primary{% else %}subtle{% endif %}" href="/?filter=upcoming">Upcoming</a>
+    <a class="btn {% if selected_filter == 'overdue' %}primary{% else %}subtle{% endif %}" href="/?filter=overdue">Overdue</a>
+    <a class="btn {% if selected_filter == 'taken' %}primary{% else %}subtle{% endif %}" href="/?filter=taken">Taken</a>
+</div>
+
+<div class="row section">
+    <a class="btn primary" href="/add">+ Add Medication</a>
+    <a class="btn subtle" href="/device">Device Simulator</a>
+</div>
+
+{% if meds|length == 0 %}
+<div class="card">
+    <div style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">No medications yet</div>
+    <div class="muted">Add your first medication to get started.</div>
+</div>
+{% else %}
+<div class="stack">
+    {% for med in meds %}
+    <div class="med-card">
+        <div class="med-main">
+            <div class="med-title">{{ med["name"] }}</div>
+
+            <div class="med-time">
+                {{ med["time"] }}
+                {% if med["dosage"] %}
+                    · {{ med["dosage"] }}
+                {% endif %}
+            </div>
+
+            {% if med["status"] == "taken" %}
+                <div class="status taken">Taken</div>
+            {% elif med["status"] == "overdue" %}
+                <div class="status overdue">Overdue</div>
+            {% else %}
+                <div class="status upcoming">Upcoming</div>
+            {% endif %}
+
+            <div class="med-meta">
+                {% if med["repeat_daily"] == 1 %}
+                    <div class="muted">Repeats daily</div>
+                {% endif %}
+                {% if med["start_date"] %}
+                    <div class="muted">Start: {{ med["start_date"] }}</div>
+                {% endif %}
+                {% if med["end_date"] %}
+                    <div class="muted">End: {{ med["end_date"] }}</div>
+                {% endif %}
+                {% if med["notes"] %}
+                    <div class="muted">Instructions: {{ med["notes"] }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="actions">
+            {% if med["status"] == "taken" %}
+                <span class="btn subtle disabled-btn">Taken</span>
+            {% else %}
+                <a class="btn primary" href="/take/{{ med['id'] }}">Mark Taken</a>
+            {% endif %}
+            <a class="btn subtle" href="/edit/{{ med['id'] }}">Edit</a>
+            <a class="btn danger" href="/delete/{{ med['id'] }}">Remove</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

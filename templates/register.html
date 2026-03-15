@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}Register · DosePal{% endblock %}
+
+{% block body %}
+<div class="auth-wrap">
+    <div class="auth-card">
+
+        <div class="hero auth-hero">
+            <h2>Create your account.</h2>
+            <div class="subtitle">Start tracking medications in a cleaner, smarter way.</div>
+        </div>
+
+        {% if error %}
+        <div class="error-banner section">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="form">
+
+            <div class="field">
+                <label>Username</label>
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Choose a username"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <div class="row auth-actions">
+                <button class="btn primary" type="submit">Create Account</button>
+                <a class="btn subtle" href="/login">Back to login</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

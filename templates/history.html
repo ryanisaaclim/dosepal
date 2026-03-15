@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}History · DosePal{% endblock %}
+
+{% block body %}
+<div class="hero history-hero">
+    <div>
+        <h2>History.</h2>
+        <div class="subtitle">Latest medication activity, with most recent entries first.</div>
+    </div>
+
+    {% if rows|length > 0 %}
+    <form method="POST" action="/clear_history">
+        <button class="btn danger" type="submit">Clear All History</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if rows|length == 0 %}
+<div class="card">
+    <div style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">No history yet</div>
+    <div class="muted">Your medication activity will appear here once actions are logged.</div>
+</div>
+{% else %}
+<div class="table-list">
+    {% for r in rows %}
+    <div class="list-row">
+        <div class="list-row-main">
+            <div class="list-title">{{ r["name"] }}</div>
+
+            <div style="margin: 6px 0 10px 0;">
+                {% if r["action"] == "taken_late" %}
+                    <span class="status warning">Taken Late</span>
+                {% elif r["action"] == "taken" %}
+                    <span class="status taken">Taken</span>
+                {% elif r["action"] == "missed" %}
+                    <span class="status overdue">Missed</span>
+                {% else %}
+                    <span class="muted">{{ r["action"]|capitalize }}</span>
+                {% endif %}
+            </div>
+
+            <div class="list-meta">
+                Scheduled: {{ r["time"] or "—" }} · Logged: {{ r["ts"] }}
+            </div>
+
+            {% if r["dosage"] %}
+            <div class="list-meta extra-meta">
+                Dosage: {{ r["dosage"] }}
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="/delete_log/{{ r['id'] }}">
+            <button class="btn danger" type="submit">Clear</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

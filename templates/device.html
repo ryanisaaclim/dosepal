@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+
+{% block title %}Device Console · DosePal{% endblock %}
+
+{% block body %}
+<div class="hero">
+    <h2>Device Console.</h2>
+    <div class="subtitle">
+        Simulate how the DosePal dispenser fetches schedules and confirms medication intake.
+    </div>
+</div>
+
+<div class="row section">
+    <div class="btn subtle" style="pointer-events:none;">Device ID: DP-ESP32-001</div>
+    <div class="btn subtle" id="connBadge" style="pointer-events:none;">● Connected</div>
+    <div class="btn subtle" id="syncBadge" style="pointer-events:none;">Last sync: —</div>
+</div>
+
+<div class="card section">
+    <div class="card-body">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div>
+                <div style="font-size:1.2rem; font-weight:700; margin-bottom:6px;">Embedded Dispenser Link</div>
+                <div class="muted">
+                    This console acts like a Wi-Fi-enabled pill dispenser connected to your DosePal API.
+                </div>
+            </div>
+
+            <button class="btn primary" id="fetchBtn" type="button">Fetch Today’s Schedule</button>
+        </div>
+
+        <div id="status" class="muted" style="margin-top:16px;"></div>
+    </div>
+</div>
+
+<div class="card section">
+    <div class="card-body">
+        <div style="font-size:1.2rem; font-weight:700; margin-bottom:14px;">Schedule Buffer</div>
+        <div id="scheduleList" class="table-list"></div>
+    </div>
+</div>
+
+<script>
+    const connBadge = document.getElementById("connBadge");
+    const statusEl = document.getElementById("status");
+    const listEl = document.getElementById("scheduleList");
+    const fetchBtn = document.getElementById("fetchBtn");
+    const syncBadge = document.getElementById("syncBadge");
+
+    function setLastSync() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        const ss = String(now.getSeconds()).padStart(2, "0");
+        syncBadge.textContent = `Last sync: ${hh}:${mm}:${ss}`;
+    }
+
+    function setConnected(isConnected) {
+        if (isConnected) {
+            connBadge.textContent = "● Connected";
+            connBadge.className = "btn subtle";
+            connBadge.style.color = "var(--green)";
+            connBadge.style.borderColor = "rgba(50,215,75,0.22)";
+            connBadge.style.background = "rgba(50,215,75,0.10)";
+        } else {
+            connBadge.textContent = "● Disconnected";
+            connBadge.className = "btn subtle";
+            connBadge.style.color = "var(--red)";
+            connBadge.style.borderColor = "rgba(255,69,58,0.25)";
+            connBadge.style.background = "rgba(255,69,58,0.10)";
+        }
+    }
+
+    async function checkConnection() {
+        try {
+            const res = await fetch("/api/health", { cache: "no-store" });
+            if (!res.ok) throw new Error("Bad status");
+            setConnected(true);
+            return true;
+        } catch (e) {
+            setConnected(false);
+            return false;
+        }
+    }
+
+    function renderSchedule(items) {
+        listEl.innerHTML = "";
+
+        if (items.length === 0) {
+            statusEl.textContent = "No medications found.";
+            listEl.innerHTML = `
+                <div class="list-row">
+                    <div class="list-title">No schedule loaded</div>
+                    <div class="list-meta">There are no medications to display right now.</div>
+                </div>
+            `;
+            return;
+        }
+
+        statusEl.textContent = `Loaded ${items.length} item(s).`;
+
+        for (const med of items) {
+            const row = document.createElement("div");
+            row.className = "list-row";
+            row.style.display = "flex";
+            row.style.justifyContent = "space-between";
+            row.style.alignItems = "flex-start";
+            row.style.gap = "16px";
+            row.style.flexWrap = "wrap";
+
+            const left = document.createElement("div");
+            left.style.flex = "1";
+            left.style.minWidth = "220px";
+            left.innerHTML = `
+                <div class="list-title" style="font-size:1.08rem;">${med.name}</div>
+                <div class="list-meta" style="margin-top:6px;">Scheduled time: ${med.time}</div>
+            `;
+
+            const right = document.createElement("div");
+            right.className = "row";
+            right.style.justifyContent = "flex-end";
+
+            if (med.taken === 1) {
+                const badge = document.createElement("span");
+                badge.className = "btn subtle";
+                badge.style.pointerEvents = "none";
+                badge.style.color = "var(--green)";
+                badge.style.borderColor = "rgba(50,215,75,0.22)";
+                badge.style.background = "rgba(50,215,75,0.10)";
+                badge.textContent = "Taken";
+                right.appendChild(badge);
+            } else {
+                const btn = document.createElement("button");
+                btn.className = "btn primary";
+                btn.type = "button";
+                btn.textContent = "Confirm Taken";
+                btn.onclick = async () => {
+                    statusEl.textContent = "Sending confirmation...";
+                    const res = await fetch(`/api/take/${med.id}`, { method: "POST" });
+                    const out = await res.json();
+
+                    if (out.ok) {
+                        statusEl.textContent = "Confirmed. Refreshing schedule...";
+                        fetchSchedule();
+                    } else {
+                        statusEl.textContent = "Failed to confirm.";
+                    }
+                };
+                right.appendChild(btn);
+            }
+
+            row.appendChild(left);
+            row.appendChild(right);
+            listEl.appendChild(row);
+        }
+    }
+
+    async function fetchSchedule() {
+        statusEl.textContent = "Checking connection...";
+        const ok = await checkConnection();
+
+        if (!ok) {
+            statusEl.textContent = "Device offline: cannot reach server.";
+            return;
+        }
+
+        statusEl.textContent = "Fetching schedule from server...";
+        const res = await fetch("/api/schedule/today", { cache: "no-store" });
+        const data = await res.json();
+        renderSchedule(data);
+        setLastSync();
+    }
+
+    fetchBtn.addEventListener("click", fetchSchedule);
+    checkConnection();
+    setInterval(checkConnection, 5000);
+</script>
+{% endblock %}

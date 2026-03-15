@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics · DosePal{% endblock %}
+
+{% block body %}
+<div class="hero">
+    <h2>Analytics.</h2>
+    <div class="subtitle">Medication adherence overview and recent activity.</div>
+</div>
+
+<div class="stats analytics-stats section">
+    <div class="stat-box">
+        <div class="stat-label">Total Logged Doses</div>
+        <div class="stat-value">{{ total }}</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-label">Taken</div>
+        <div class="stat-value">{{ taken }}</div>
+        <div class="helper" style="margin-top:8px;">Includes late doses</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-label">Missed</div>
+        <div class="stat-value">{{ missed }}</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-label">Adherence Rate</div>
+        <div class="stat-value">{{ adherence }}%</div>
+    </div>
+</div>
+
+<div class="card section">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+        <div style="font-weight:700; font-size:1.1rem;">Adherence Progress</div>
+        <div class="muted">{{ adherence }}%</div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ adherence }}%;"></div>
+    </div>
+</div>
+
+<div class="analytics-header section">
+    <div>
+        <div class="analytics-title">Recent Activity</div>
+        <div class="muted">Your latest medication events.</div>
+    </div>
+</div>
+
+{% if recent_logs|length == 0 %}
+<div class="card">
+    <div style="font-size:1.1rem; font-weight:600; margin-bottom:6px;">No analytics data yet</div>
+    <div class="muted">Once medication activity is logged, it will appear here.</div>
+</div>
+{% else %}
+<div class="table-list">
+    {% for log in recent_logs %}
+    <div class="activity-row">
+        <div class="activity-name">{{ log["name"] }}</div>
+
+        <div class="activity-status">
+            {% if log["action"] == "taken_late" %}
+                <span class="status warning">Taken Late</span>
+            {% elif log["action"] == "taken" %}
+                <span class="status taken">Taken</span>
+            {% elif log["action"] == "missed" %}
+                <span class="status overdue">Missed</span>
+            {% else %}
+                <span class="muted">{{ log["action"]|capitalize }}</span>
+            {% endif %}
+        </div>
+
+        <div class="activity-time">
+            Scheduled: {{ log["time"] or "—" }} · Logged: {{ log["ts"] }}
+        </div>
+
+        <div class="activity-dosage">
+            {% if log["dosage"] %}
+                Dosage: {{ log["dosage"] }}
+            {% else %}
+                —
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

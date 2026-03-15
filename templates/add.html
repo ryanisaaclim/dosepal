@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Medication · DosePal{% endblock %}
+
+{% block body %}
+<div class="hero add-hero">
+    <div>
+        <h2>Add Medication.</h2>
+        <div class="subtitle">Create a new medication entry for today or a daily schedule.</div>
+    </div>
+
+    <a class="btn subtle" href="/">← Back</a>
+</div>
+
+{% if error %}
+<div class="error-banner">
+    {{ error }}
+</div>
+{% endif %}
+
+<div class="card">
+    <form class="form" method="POST">
+        <div class="field">
+            <label>Medication name</label>
+            <input
+                type="text"
+                name="name"
+                placeholder="e.g., Metformin"
+                required
+                pattern="[A-Za-z\s\-]{2,40}"
+                title="Use letters only (2–40 chars). Spaces and hyphens are OK."
+            >
+            <div class="helper">Letters only, with spaces or hyphens if needed.</div>
+        </div>
+
+        <div class="field">
+            <label>Dosage</label>
+            <input
+                type="text"
+                name="dosage"
+                placeholder="e.g., 1 tablet"
+            >
+            <div class="helper">Optional.</div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label>Start date</label>
+                <div class="input-shell">
+                    <input type="date" name="start_date">
+                    <span class="input-icon">📅</span>
+                </div>
+                <div class="helper">Optional.</div>
+            </div>
+
+            <div class="field">
+                <label>End date</label>
+                <div class="input-shell">
+                    <input type="date" name="end_date">
+                    <span class="input-icon">📅</span>
+                </div>
+                <div class="helper">Optional.</div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Time</label>
+            <div class="input-shell">
+                <input type="time" name="time" required title="Select a valid time">
+                <span class="input-icon">🕒</span>
+            </div>
+            <div class="helper">Tap to choose the medication time.</div>
+        </div>
+
+        <div class="field">
+            <label>Instructions</label>
+            <textarea
+                name="notes"
+                rows="3"
+                placeholder="e.g., Take after food"
+            ></textarea>
+            <div class="helper">Optional.</div>
+        </div>
+
+        <div class="field">
+            <label class="checkbox-label">
+                <input type="checkbox" name="repeat_daily" value="1">
+                <span>Repeat daily</span>
+            </label>
+            <div class="helper">This medication will reset to not taken each new day.</div>
+        </div>
+
+        <div class="row">
+            <button class="btn primary" type="submit">Save Medication</button>
+            <a class="btn subtle" href="/">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
