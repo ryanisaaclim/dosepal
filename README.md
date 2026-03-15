@@ -21,7 +21,7 @@ The current version of DosePal focuses primarily on the **software platform**, w
 
 ---
 
-### 1. Smart Pill Dispenser (Hardware)
+#Smart Pill Dispenser (Hardware)
 
 A physical pill dispenser prototype was built to remind patients when it is time to take their medication.
 
